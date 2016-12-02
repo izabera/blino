@@ -4,8 +4,10 @@ struct vm {
   // 16-bit wide pointers
   uint8_t memory[1<<16];
 
-  // 16 16bit wide registers
+  // 16 16-bit wide general purpose registers
   uint16_t regs[16];
+  // instruction pointer
+  uint16_t rip;
 
   union {
     uint8_t flags;

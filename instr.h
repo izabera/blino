@@ -1,26 +1,9 @@
+#include <stdint.h>
+
 // small asm language for a small virtual machine
 
-// instructions are 2 bytes long, + 0/1/2 args
-//
-// 1st byte:
-// 00000000
-// ^        1 if 1st arg 16 bit, 0 otherwise
-//  ^       1 if 2nd arg...
-//   ^^^^^^ instr code
-//
-// 2nd byte:
-// 00000000
-// ^^       0 if 1st arg is immediate,
-//          1 if %reg,
-//          2 if (imm),
-//          3 if (%reg)
-//   ^^     same for 2nd arg
-//     ^^^^ unused as of now
-//
-// 1st arg is src, 2nd is dest
-
 // valid instructions:
-enum instr {
+enum opcode {
   ADD     =  0, // add     arg arg
   ADC     =  1, // adc     arg arg
   SUB     =  2, // sub     arg arg
@@ -99,3 +82,43 @@ enum instr {
 
   HLT     = 46, // hlt
 };
+
+// operands types
+#define BB 0          // both arg1 and arg2 are byte args
+#define BW (1<<6)     // arg1 is 2 bytes, arg2 is 1 byte
+#define WB (1<<7)     // arg2 is 2 bytes, arg1 is 1 byte
+#define WW (BW|WB)
+
+// instructions are 2 bytes long, + 0/1/2 args
+//
+// 1st byte:
+// (hi--lo)
+// 00000000
+// ^        1 if 1st arg 16 bit, 0 otherwise
+//  ^       1 if 2nd arg...
+//   ^^^^^^ instr code
+//
+// 2nd byte:
+// 00000000
+// ^^       0 if 1st arg is immediate,
+//          1 if %reg,
+//          2 if (imm),
+//          3 if (%reg)
+//   ^^     same for 2nd arg
+//     ^^^^ unused as of now
+//
+// 1st arg is src, 2nd is dest
+
+#if 0
+this would be cool but different compilers encode data differently
+and the current binary format is just a dump of the whole vm
+struct __attribute__((packed)) instr {
+  uint8_t argwidth1:1,
+          argwidth2:1;
+  enum opcode op:6;
+  uint8_t argtype1:2,
+          argtype2:2;
+};
+#else
+struct instr { uint8_t first, second; };
+#endif
